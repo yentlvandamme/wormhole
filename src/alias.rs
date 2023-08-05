@@ -55,7 +55,7 @@ mod test {
     #[test]
     fn add_alias_without_path() {
         let mut alias_instance = Aliases::init();
-        let alias_name = String::from("TestNameFoo");
+        let alias_name = String::from("TestName");
         let current_dir = env::current_dir();
         let mut expected_hashmap_result = HashMap::new();
 
