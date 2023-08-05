@@ -11,14 +11,20 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Add(DefaultArgs),
+    Add(AddArgs),
+    Remove(RemoveArgs),
     Print
 }
 
 #[derive(Args)]
-struct DefaultArgs {
+struct AddArgs {
     alias_name: String,
     path: Option<String>
+}
+
+#[derive(Args)]
+struct RemoveArgs {
+    alias_name: String
 }
 
 fn main() {
@@ -27,6 +33,7 @@ fn main() {
 
     match cli.command {
         Commands::Add(args) => aliases.add(args.alias_name, args.path),
+        Commands::Remove(args) => aliases.remove(args.alias_name),
         Commands::Print => aliases.all_aliases(),
     }
 }

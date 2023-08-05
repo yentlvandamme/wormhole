@@ -26,6 +26,14 @@ impl Aliases {
         self.aliases.insert(alias_name, alias_path);
     }
 
+    pub fn remove (&mut self, alias_name: String) {
+        let removed_value = self.aliases.remove_entry(&alias_name);
+        match removed_value {
+            Some((key, value)) => println!("{} {}", key, value.into_os_string().into_string().unwrap()),
+            None => println!("Alias name not found.")
+        }
+    }
+
     pub fn all_aliases (&self) {
         let all_keys = self.aliases.keys();
 
@@ -63,5 +71,16 @@ mod test {
         expected_hashmap_result.insert(alias_name.clone(), current_dir.unwrap());
 
         assert_eq!(expected_hashmap_result, alias_instance.aliases);
+    }
+
+    #[test]
+    fn remove_alias() {
+        let mut alias_instance = Aliases::init();
+        let alias_name = String::from("TestName");
+
+        alias_instance.add(alias_name.clone(), None);
+        alias_instance.remove(alias_name.clone());
+
+        assert!(alias_instance.aliases.is_empty());
     }
 }
