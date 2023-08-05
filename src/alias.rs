@@ -31,7 +31,7 @@ impl Aliases {
         match removed_value {
             Some((key, value)) => println!("{} {}", key, value.into_os_string().into_string().unwrap()),
             None => println!("Alias name not found.")
-        }
+        };
     }
 
     pub fn all_aliases (&self) {
@@ -39,7 +39,7 @@ impl Aliases {
 
         for key in all_keys {
             println!("{:?}", key);
-        }
+        };
     }
 }
 

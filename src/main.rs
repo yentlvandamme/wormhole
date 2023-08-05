@@ -35,6 +35,6 @@ fn main() {
         Commands::Add(args) => aliases.add(args.alias_name, args.path),
         Commands::Remove(args) => aliases.remove(args.alias_name),
         Commands::Print => aliases.all_aliases(),
-    }
+    };
 }
 
