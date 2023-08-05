@@ -1,7 +1,7 @@
 use clap::{Parser, Args, Subcommand};
-use crate::alias::Aliases;
+use crate::aliases::Aliases;
 
-pub mod alias;
+pub mod aliases;
 
 #[derive(Parser)]
 struct Cli {
