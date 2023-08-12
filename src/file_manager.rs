@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::io::{BufReader, Read};
+use std::io::{BufReader, Read, Write};
 use std::fs::File;
 
 pub struct FileManager {
@@ -18,5 +18,11 @@ impl FileManager {
         buf_reader.read_to_string(&mut contents).unwrap();
 
         contents
+    }
+
+    // TODO: Should we eventually switch to a Write trait implementation?
+    pub fn write_updates(&self, content: String) {
+        let mut file = File::create(&self.path).unwrap();
+        file.write(content.as_bytes()).unwrap();
     }
 }

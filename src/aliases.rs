@@ -1,24 +1,22 @@
 use std::env;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::io::Write;
-use std::fs::File;
 use crate::file_manager::FileManager;
 
 pub struct Aliases {
-    aliases: HashMap<String, PathBuf>
+    aliases: HashMap<String, PathBuf>,
+    file_manager: FileManager
 }
 
 impl Aliases {
     pub fn init () -> Self {
         let alias_data_path = get_alias_data_location();
-
         let file_manager = FileManager::new(alias_data_path);
         let alias_file_contents = file_manager.get_contents();
 
         match serde_json::from_str(&alias_file_contents) {
-            Ok(parsed_aliases) => Self { aliases: parsed_aliases },
-            Err(_) => Self { aliases: HashMap::new() }
+            Ok(parsed_aliases) => Self { aliases: parsed_aliases, file_manager },
+            Err(_) => Self { aliases: HashMap::new(), file_manager }
         }
     }
 
@@ -37,7 +35,7 @@ impl Aliases {
         };
 
         self.aliases.insert(alias_name, alias_path);
-        self.write_updates(get_alias_data_location());
+        self.file_manager.write_updates(self.serialize_aliases());
     }
 
     pub fn remove (&mut self, alias_name: String) {
@@ -46,8 +44,7 @@ impl Aliases {
             Some((key, value)) => println!("{} {}", key, value.into_os_string().into_string().unwrap()),
             None => println!("Alias name not found.")
         };
-
-        self.write_updates(get_alias_data_location());
+        self.file_manager.write_updates(self.serialize_aliases());
     }
 
     // TODO: Show a clean output to the user
@@ -59,11 +56,9 @@ impl Aliases {
         };
     }
 
-    fn write_updates(&self, location: PathBuf) {
-        let mut file = File::create(&location).unwrap();
-        file.write(serde_json::to_string_pretty(&self.aliases).unwrap().as_bytes()).unwrap();
+    fn serialize_aliases(&self) -> String {
+        serde_json::to_string_pretty(&self.aliases).unwrap()
     }
-
 }
 
 // TODO: This probably isn't the correct location for this helper function
