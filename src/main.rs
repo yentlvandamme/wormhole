@@ -2,7 +2,6 @@ use clap::{Parser, Args, Subcommand};
 use crate::aliases::Aliases;
 
 pub mod aliases;
-pub mod file_manager;
 
 #[derive(Parser)]
 struct Cli {
@@ -30,6 +29,7 @@ struct RemoveArgs {
 
 fn main() {
     let cli = Cli::parse();
+
     let mut aliases = Aliases::init();
 
     match cli.command {

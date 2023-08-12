@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::PathBuf, env};
+use std::{collections::HashMap, env};
+use std::path::PathBuf;
+use std::io::{BufReader, Read, Write};
+use std::fs::File;
 
 pub struct Aliases {
     aliases: HashMap<String, PathBuf>
@@ -6,7 +9,15 @@ pub struct Aliases {
 
 impl Aliases {
     pub fn init () -> Self {
-        Self {aliases: HashMap::new()}
+        let alias_data_path = get_alias_data_location();
+        let alias_file_contents = get_data_file_contents(alias_data_path);
+
+        match serde_json::from_str(&alias_file_contents) {
+            Ok(parsed_aliases) => {
+                Self { aliases: parsed_aliases }
+            },
+            Err(_) => Self { aliases: HashMap::new() }
+        }
     }
 
     pub fn add (&mut self, alias_name: String, path: Option<String>) {
@@ -24,6 +35,7 @@ impl Aliases {
         };
 
         self.aliases.insert(alias_name, alias_path);
+        self.write_updates(get_alias_data_location());
     }
 
     pub fn remove (&mut self, alias_name: String) {
@@ -32,6 +44,8 @@ impl Aliases {
             Some((key, value)) => println!("{} {}", key, value.into_os_string().into_string().unwrap()),
             None => println!("Alias name not found.")
         };
+
+        self.write_updates(get_alias_data_location());
     }
 
     pub fn all_aliases (&self) {
@@ -41,6 +55,31 @@ impl Aliases {
             println!("{:?}", key);
         };
     }
+
+    fn write_updates(&self, location: PathBuf) {
+        let mut file = File::create(&location).unwrap();
+        file.write(serde_json::to_string_pretty(&self.aliases).unwrap().as_bytes()).unwrap();
+    }
+
+}
+
+fn get_alias_data_location() -> PathBuf {
+    let mut path = PathBuf::new();
+    let directory = env!("OUT_DIR");
+    path.push(&directory);
+    path.push("aliases.json");
+
+    path
+}
+
+
+fn get_data_file_contents(data_path: PathBuf) -> String {
+    let file = File::open(&data_path).unwrap();
+    let mut buf_reader = BufReader::new(file);
+    let mut contents = String::new();
+    buf_reader.read_to_string(&mut contents).unwrap();
+
+    contents
 }
 
 #[cfg(test)]
