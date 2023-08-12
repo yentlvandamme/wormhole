@@ -1,7 +1,9 @@
-use std::{collections::HashMap, env};
+use std::env;
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::io::{BufReader, Read, Write};
+use std::io::Write;
 use std::fs::File;
+use crate::file_manager::FileManager;
 
 pub struct Aliases {
     aliases: HashMap<String, PathBuf>
@@ -10,12 +12,12 @@ pub struct Aliases {
 impl Aliases {
     pub fn init () -> Self {
         let alias_data_path = get_alias_data_location();
-        let alias_file_contents = get_data_file_contents(alias_data_path);
+
+        let file_manager = FileManager::new(alias_data_path);
+        let alias_file_contents = file_manager.get_contents();
 
         match serde_json::from_str(&alias_file_contents) {
-            Ok(parsed_aliases) => {
-                Self { aliases: parsed_aliases }
-            },
+            Ok(parsed_aliases) => Self { aliases: parsed_aliases },
             Err(_) => Self { aliases: HashMap::new() }
         }
     }
@@ -48,6 +50,7 @@ impl Aliases {
         self.write_updates(get_alias_data_location());
     }
 
+    // TODO: Show a clean output to the user
     pub fn all_aliases (&self) {
         let all_keys = self.aliases.keys();
 
@@ -63,6 +66,8 @@ impl Aliases {
 
 }
 
+// TODO: This probably isn't the correct location for this helper function
+// New name: get_location
 fn get_alias_data_location() -> PathBuf {
     let mut path = PathBuf::new();
     let directory = env!("OUT_DIR");
@@ -70,16 +75,6 @@ fn get_alias_data_location() -> PathBuf {
     path.push("aliases.json");
 
     path
-}
-
-
-fn get_data_file_contents(data_path: PathBuf) -> String {
-    let file = File::open(&data_path).unwrap();
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents).unwrap();
-
-    contents
 }
 
 #[cfg(test)]

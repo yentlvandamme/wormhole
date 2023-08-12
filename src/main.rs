@@ -2,6 +2,7 @@ use clap::{Parser, Args, Subcommand};
 use crate::aliases::Aliases;
 
 pub mod aliases;
+pub mod file_manager;
 
 #[derive(Parser)]
 struct Cli {
