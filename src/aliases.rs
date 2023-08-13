@@ -10,8 +10,7 @@ pub struct Aliases {
 
 impl Aliases {
     pub fn init () -> Self {
-        let alias_data_path = get_alias_data_location();
-        let file_manager = FileManager::new(alias_data_path);
+        let file_manager = FileManager::new(get_alias_data_location());
         let alias_file_contents = file_manager.get_contents();
 
         match serde_json::from_str(&alias_file_contents) {
@@ -35,7 +34,7 @@ impl Aliases {
         };
 
         self.aliases.insert(alias_name, alias_path);
-        self.file_manager.write_updates(self.serialize_aliases());
+        self.file_manager.write_content(self.serialize_aliases());
     }
 
     pub fn remove (&mut self, alias_name: String) {
@@ -44,7 +43,7 @@ impl Aliases {
             Some((key, value)) => println!("{} {}", key, value.into_os_string().into_string().unwrap()),
             None => println!("Alias name not found.")
         };
-        self.file_manager.write_updates(self.serialize_aliases());
+        self.file_manager.write_content(self.serialize_aliases());
     }
 
     // TODO: Show a clean output to the user
@@ -52,7 +51,13 @@ impl Aliases {
         let all_keys = self.aliases.keys();
 
         for key in all_keys {
-            println!("{:?}", key);
+            if let Some(value) = self.aliases.get(key) {
+                // TODO: Formatting should be better. Tabs like this aren't cutting it
+                // When the key is longer, the start of the value shifts
+                //
+                // Should be the same kind of formatting as the remove function
+                println!("{}                    {}", key,  value.as_os_str().to_str().unwrap());
+            }
         };
     }
 

@@ -21,7 +21,7 @@ impl FileManager {
     }
 
     // TODO: Should we eventually switch to a Write trait implementation?
-    pub fn write_updates(&self, content: String) {
+    pub fn write_content(&self, content: String) {
         let mut file = File::create(&self.path).unwrap();
         file.write(content.as_bytes()).unwrap();
     }
