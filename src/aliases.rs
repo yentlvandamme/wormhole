@@ -40,29 +40,31 @@ impl Aliases {
     pub fn remove (&mut self, alias_name: String) {
         let removed_value = self.aliases.remove_entry(&alias_name);
         match removed_value {
-            Some((key, value)) => println!("{} {}", key, value.into_os_string().into_string().unwrap()),
+            Some((key, value)) => {
+                println!("The following alias has been removed:");
+                self.print_alias(key.as_str(), value.as_os_str().to_str().unwrap());
+            },
             None => println!("Alias name not found.")
         };
         self.file_manager.write_content(self.serialize_aliases());
     }
 
-    // TODO: Show a clean output to the user
     pub fn all_aliases (&self) {
         let all_keys = self.aliases.keys();
 
         for key in all_keys {
             if let Some(value) = self.aliases.get(key) {
-                // TODO: Formatting should be better. Tabs like this aren't cutting it
-                // When the key is longer, the start of the value shifts
-                //
-                // Should be the same kind of formatting as the remove function
-                println!("{}                    {}", key,  value.as_os_str().to_str().unwrap());
+                self.print_alias(key.as_str(), value.as_os_str().to_str().unwrap());
             }
         };
     }
 
     fn serialize_aliases(&self) -> String {
         serde_json::to_string_pretty(&self.aliases).unwrap()
+    }
+
+    fn print_alias(&self, key: &str, value: &str) {
+         println!("{0: <20} {1: <20}", key, value);
     }
 }
 
