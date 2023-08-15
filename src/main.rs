@@ -30,7 +30,6 @@ struct RemoveArgs {
 
 fn main() {
     let cli = Cli::parse();
-
     let mut aliases = Aliases::init();
 
     match cli.command {

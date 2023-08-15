@@ -1,8 +1,11 @@
 use std::env;
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::path::PathBuf;
 use crate::file_manager::FileManager;
 
+// Look into: https://stackoverflow.com/questions/66801681/is-there-any-use-for-str-in-rust
+// https://stackoverflow.com/questions/54488127/getting-temporary-value-dropped-while-borrowed-when-trying-to-update-an-option
 pub struct Aliases {
     aliases: HashMap<String, PathBuf>,
     file_manager: FileManager
@@ -39,6 +42,7 @@ impl Aliases {
 
     pub fn remove (&mut self, alias_name: String) {
         let removed_value = self.aliases.remove_entry(&alias_name);
+
         match removed_value {
             Some((key, value)) => {
                 println!("The following alias has been removed:");
@@ -46,6 +50,7 @@ impl Aliases {
             },
             None => println!("Alias name not found.")
         };
+
         self.file_manager.write_content(self.serialize_aliases());
     }
 
@@ -63,7 +68,7 @@ impl Aliases {
         serde_json::to_string_pretty(&self.aliases).unwrap()
     }
 
-    fn print_alias(&self, key: &str, value: &str) {
+    fn print_alias<T: Display, K: Display>(&self, key: T, value: K) {
          println!("{0: <20} {1: <20}", key, value);
     }
 }
