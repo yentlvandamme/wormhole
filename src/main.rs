@@ -1,5 +1,5 @@
 use clap::{Parser, Args, Subcommand};
-use crate::aliases::Aliases;
+use crate::aliases::{Aliases, AliasName};
 
 pub mod aliases;
 pub mod file_manager;
@@ -14,18 +14,24 @@ struct Cli {
 enum Commands {
     Add(AddArgs),
     Remove(RemoveArgs),
+    Navigate(NavigateArgs),
     Print
 }
 
 #[derive(Args)]
 struct AddArgs {
-    alias_name: String,
+    alias_name: AliasName,
     path: Option<String>
 }
 
 #[derive(Args)]
 struct RemoveArgs {
-    alias_name: String
+    alias_name: AliasName
+}
+
+#[derive(Args)]
+struct NavigateArgs {
+    alias_name: AliasName
 }
 
 fn main() {
@@ -35,6 +41,7 @@ fn main() {
     match cli.command {
         Commands::Add(args) => aliases.add(args.alias_name, args.path),
         Commands::Remove(args) => aliases.remove(args.alias_name),
+        Commands::Navigate(args) => aliases.navigate_to_alias(args.alias_name),
         Commands::Print => aliases.all_aliases(),
     };
 }

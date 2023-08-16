@@ -7,13 +7,15 @@ use crate::file_manager::FileManager;
 // Look into: https://stackoverflow.com/questions/66801681/is-there-any-use-for-str-in-rust
 // https://stackoverflow.com/questions/54488127/getting-temporary-value-dropped-while-borrowed-when-trying-to-update-an-option
 pub struct Aliases {
-    aliases: HashMap<String, PathBuf>,
+    aliases: HashMap<AliasName, PathBuf>,
     file_manager: FileManager
 }
 
+pub type AliasName = String;
+
 impl Aliases {
     pub fn init () -> Self {
-        let file_manager = FileManager::new(get_alias_data_location());
+        let file_manager = FileManager::new(Self::get_aliases_data_location());
         let alias_file_contents = file_manager.get_contents();
 
         match serde_json::from_str(&alias_file_contents) {
@@ -22,7 +24,7 @@ impl Aliases {
         }
     }
 
-    pub fn add (&mut self, alias_name: String, path: Option<String>) {
+    pub fn add (&mut self, alias_name: AliasName, path: Option<String>) {
         let alias_path = match path {
             Some(path) => PathBuf::from(path),
             None => {
@@ -40,7 +42,7 @@ impl Aliases {
         self.file_manager.write_content(self.serialize_aliases());
     }
 
-    pub fn remove (&mut self, alias_name: String) {
+    pub fn remove (&mut self, alias_name: AliasName) {
         let removed_value = self.aliases.remove_entry(&alias_name);
 
         match removed_value {
@@ -64,6 +66,19 @@ impl Aliases {
         };
     }
 
+    pub fn navigate_to_alias(&self,  alias_name: AliasName) {
+        match self.aliases.get(&alias_name) {
+            Some(path) => {
+                println!("cd {}", path.to_string_lossy());
+                // https://www.reddit.com/r/rust/comments/iqw2zo/how_to_implement_shell_built_in_commands_in_rust/
+                // We cannot use set_current_dir, since changing the current location would mean
+                // changing the location of the parent process. (The processing calling our
+                // program)
+            },
+            None => println!("Alias not found")
+        }
+    }
+
     fn serialize_aliases(&self) -> String {
         serde_json::to_string_pretty(&self.aliases).unwrap()
     }
@@ -71,17 +86,15 @@ impl Aliases {
     fn print_alias<T: Display, K: Display>(&self, key: T, value: K) {
          println!("{0: <20} {1: <20}", key, value);
     }
-}
 
-// TODO: This probably isn't the correct location for this helper function
-// New name: get_location
-fn get_alias_data_location() -> PathBuf {
-    let mut path = PathBuf::new();
-    let directory = env!("OUT_DIR");
-    path.push(&directory);
-    path.push("aliases.json");
+    fn get_aliases_data_location() -> PathBuf {
+        let mut path = PathBuf::new();
+        let directory = env!("OUT_DIR");
+        path.push(&directory);
+        path.push("aliases.json");
 
-    path
+        path
+    }
 }
 
 #[cfg(test)]
