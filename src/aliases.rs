@@ -25,6 +25,11 @@ impl Aliases {
     }
 
     pub fn add (&mut self, alias_name: AliasName, path: Option<String>) {
+        if self.aliases.contains_key(&alias_name) {
+            println!("Cannot add new alias. Key already exists");
+            return
+        }
+
         let alias_path = match path {
             Some(path) => PathBuf::from(path),
             None => {
@@ -74,6 +79,10 @@ impl Aliases {
                 // We cannot use set_current_dir, since changing the current location would mean
                 // changing the location of the parent process. (The processing calling our
                 // program)
+                //
+                // 1) A workaround might be to copy the command to the user's clipboard
+                // 2) Maybe we can ask the OS to open a new terminal with the requested path,
+                //    providing the user passes a flag
             },
             None => println!("Alias not found")
         }
@@ -123,6 +132,37 @@ mod test {
 
         alias_instance.add(alias_name.clone(), None);
         expected_hashmap_result.insert(alias_name.clone(), current_dir.unwrap());
+
+        assert_eq!(expected_hashmap_result, alias_instance.aliases);
+    }
+
+    #[test]
+    fn add_duplicated_alias() {
+        let mut alias_instance = Aliases::init();
+        let alias_name = String::from("TestName");
+        let first_alias_path = String::from("/bin");
+        let second_alias_path = String::from("/etc");
+        let mut expected_hashmap_result = HashMap::new();
+
+        alias_instance.add(alias_name.clone(), Some(first_alias_path.clone()));
+        alias_instance.add(alias_name.clone(), Some(second_alias_path.clone()));
+        expected_hashmap_result.insert(alias_name.clone(), PathBuf::from(first_alias_path.clone()));
+
+        assert_eq!(expected_hashmap_result, alias_instance.aliases);
+    }
+
+    #[test]
+    fn add_duplicated_path() {
+        let mut alias_instance = Aliases::init();
+        let first_alias_name = String::from("TestName");
+        let second_alias_name = String::from("AnotherTestName");
+        let alias_path = String::from("/bin");
+        let mut expected_hashmap_result = HashMap::new();
+
+        alias_instance.add(first_alias_name.clone(), Some(alias_path.clone()));
+        alias_instance.add(second_alias_name.clone(), Some(alias_path.clone()));
+        expected_hashmap_result.insert(first_alias_name.clone(), PathBuf::from(alias_path.clone()));
+        expected_hashmap_result.insert(second_alias_name.clone(), PathBuf::from(alias_path.clone()));
 
         assert_eq!(expected_hashmap_result, alias_instance.aliases);
     }
